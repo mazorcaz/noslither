@@ -19,7 +19,15 @@ if (window.noslither) {
 	noslither.active = true;
 	noslither.apply = function() {
 		noslither.zoom.apply();
+		noslither.bot.apply();
 	}
+
+	document.addEventListener('keydown', e => {
+		if (playing && e.code == 'KeyC') {
+			noslither.active = !noslither.active;
+			noslither.apply();
+		}
+	});
 
 	noslither.zoom = {};
 	noslither.zoom.active = true;
@@ -35,6 +43,76 @@ if (window.noslither) {
 		if (noslither.zoom.factor > 5) noslither.zoom.factor = 5;
 		noslither.zoom.apply();
 	});
+
+	noslither.bot = {};
+	noslither.bot.active = false;
+	noslither.bot.food = null;
+	noslither.bot.fn = function() {
+		if (!noslither.active || !noslither.bot.active) {
+			kd_r = false;
+			kd_l = false;
+			noslither.bot.food = null;
+			return;
+		}
+		requestAnimationFrame(noslither.bot.fn);
+		if (!playing) return;
+
+		if (noslither.bot.food && (slither.xx - noslither.bot.food.xx) ** 2 + (slither.yy - noslither.bot.food.yy) ** 2 < 1000 ** 2) {
+			let food = noslither.bot.food;
+			if (food.eaten_fr) {
+				console.log("EATEN");
+				noslither.bot.food = null;
+				return;
+			}
+
+			let angle = Math.atan2(food.yy - slither.yy, food.xx - slither.xx);
+			let diff = (angle - slither.ang);
+			diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+			if (Math.abs(diff) < 0.1) {
+				kd_l = false;
+				kd_r = false;
+			} else if (diff > 0) {
+				kd_l = false;
+				kd_r = true;
+			} else if (diff < 0) {
+				kd_r = false;
+				kd_l = true;
+			}
+		} else {
+			console.log("no food");
+			let minDistanceSqr = Infinity;
+			let min = -1;
+
+			for (let i=0; i<foods.length; i++) {
+				let food = foods[i];
+				if (!food) continue;
+				if (food.eaten_fr) continue;
+				let distanceSqr = (slither.xx - food.xx) ** 2 + (slither.yy - food.yy) ** 2;
+				distanceSqr -= food.sz * 100 * 100;
+				if (distanceSqr < minDistanceSqr) {
+					minDistanceSqr = distanceSqr;
+					min = i;
+				}
+			}
+
+			if (min != -1) {
+				noslither.bot.food = foods[min];
+				console.log(foods[min].sz);
+			}
+		}
+	}
+	noslither.bot.apply = function() {
+		if (noslither.active && noslither.bot.active) {
+			requestAnimationFrame(noslither.bot.fn);
+		}
+	}
+
+	document.addEventListener('keydown', e => {
+		if (e.code == 'KeyB') {
+			noslither.bot.active = !noslither.bot.active;
+			noslither.bot.apply();
+		}
+	})
 
 	window.resize = function() {
 		ww = Math.ceil(window.innerWidth);
