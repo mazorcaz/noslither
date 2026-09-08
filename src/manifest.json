@@ -9,7 +9,13 @@
 	"content_scripts": [
 		{
 			"matches": ["https://slither.io/*", "https://slither.com/io/*", "http://slither.io/*", "http://slither.com/io/*"],
-			"js": ["script.js"]
+			"js": ["inject.js"]
 		}
-	]
+	],
+    "web_accessible_resources": [
+        {
+            "resources": ["main.js"],
+            "matches": ["<all_urls>"]
+        }
+    ]
 }
