@@ -1,0 +1,15 @@
+{
+	"manifest_version": 3,
+	"name": "noslither",
+	"version": "1.0",
+	"description": "A hacked client for slither.io",
+	"action": {
+		"default_popup": "popup.html"
+	},
+	"content_scripts": [
+		{
+			"matches": ["https://slither.io/*", "https://slither.com/io/*", "http://slither.io/*", "http://slither.com/io/*"],
+			"js": ["script.js"]
+		}
+	]
+}
