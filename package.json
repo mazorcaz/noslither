@@ -1,0 +1,18 @@
+{
+	"name": "noslither",
+	"version": "1.0.0",
+	"description": "A slither.io hacked client",
+	"scripts": {
+		"extract": "node scripts/extract.js"
+	},
+	"keywords": [
+		"slither",
+		"client",
+		"hack"
+	],
+	"author": "mazorcaz",
+	"license": "MIT",
+	"devDependencies": {
+		"js-beautify": "^2.0.3"
+	}
+}
