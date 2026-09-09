@@ -57,10 +57,20 @@ if (window.noslither) {
 		requestAnimationFrame(noslither.bot.fn);
 		if (!playing) return;
 
+		let trad = slither.sp / (mamu * slither.scang * slither.spang) / 4;
+
 		if (noslither.bot.food && (slither.xx - noslither.bot.food.xx) ** 2 + (slither.yy - noslither.bot.food.yy) ** 2 < 1000 ** 2) {
 			let food = noslither.bot.food;
 			if (food.eaten_fr) {
 				console.log("EATEN");
+				noslither.bot.food = null;
+				return;
+			}
+			let cos = Math.cos(slither.ang);
+			let sin = Math.sin(slither.ang);
+			let distanceLeftSqr = (slither.xx + sin * trad - food.xx) ** 2 + (slither.yy - cos * trad - food.yy) ** 2;
+			let distanceRightSqr = (slither.xx - sin * trad - food.xx) ** 2 + (slither.yy + cos * trad - food.yy) ** 2;
+			if (distanceLeftSqr < trad ** 2 || distanceRightSqr < trad ** 2) {
 				noslither.bot.food = null;
 				return;
 			}
@@ -87,7 +97,17 @@ if (window.noslither) {
 				let food = foods[i];
 				if (!food) continue;
 				if (food.eaten_fr) continue;
+
 				let distanceSqr = (slither.xx - food.xx) ** 2 + (slither.yy - food.yy) ** 2;
+				
+				let cos = Math.cos(slither.ang);
+				let sin = Math.sin(slither.ang);
+				let distanceLeftSqr = (slither.xx + sin * trad - food.xx) ** 2 + (slither.yy - cos * trad - food.yy) ** 2;
+				let distanceRightSqr = (slither.xx - sin * trad - food.xx) ** 2 + (slither.yy + cos * trad - food.yy) ** 2;
+
+				if (distanceLeftSqr <= trad ** 2) continue;
+				if (distanceRightSqr <= trad ** 2) continue;
+
 				distanceSqr -= food.sz * 100 * 100;
 				if (distanceSqr < minDistanceSqr) {
 					minDistanceSqr = distanceSqr;
