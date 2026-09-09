@@ -126,7 +126,7 @@ if (window.noslither) {
 			let diff = (angle - slither.ang);
 			diff = Math.atan2(Math.sin(diff), Math.cos(diff));
 
-			let cost = distance + diff * 10 - (food.sz ** 2) * 25;
+			let cost = distance + Math.abs(diff * 10) - (food.sz ** 2) * 25;
 			if (cost < minCost) {
 				minCost = cost;
 				min = food;
