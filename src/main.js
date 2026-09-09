@@ -73,17 +73,23 @@ if (window.noslither) {
 			if (!snake) continue;
 			if (snake.id == slither.id) continue;
 
+			let partRad = snake.sc * 29;
+
 			for (let j=0; j<snake.pts.length; j++) {
+
 				let pt = snake.pts[j];
 				let dx = pt.xx - slither.xx;
 				let dy = pt.yy - slither.yy;
 
-				let distanceSqr = dx ** 2 + dy ** 2;
-				if (distanceSqr <= tradSqr * 9) {
+				let distance = Math.sqrt(dx ** 2 + dy ** 2);
+
+				let thresh = 4;
+				if (pt.fx == 0 && pt.fy == 0) thresh = 6;
+				if (distance <= trad * thresh + partRad) {
 					obx += dx;
 					oby += dy;
 					obstacles.push(pt);
-					if (pt.fx == 0 && pt.fy == 0) threats.push(pt);
+					if (pt.fx == 0 && pt.fy == 0) console.log('threat');
 				}
 			}
 		}
@@ -93,17 +99,19 @@ if (window.noslither) {
 			let angle = Math.atan2(-oby, -obx);
 			let diff = (angle - slither.ang);
 			diff = Math.atan2(Math.sin(diff), Math.cos(diff));
-			if (Math.abs(diff) < 0.1) {
-				kd_l = false;
-				kd_r = false;
-			} else if (diff > 0) {
-				kd_l = false;
-				kd_r = true;
-			} else if (diff < 0) {
-				kd_r = false;
-				kd_l = true;
+			if (true) {
+				if (Math.abs(diff) < 0.1) {
+					kd_l = false;
+					kd_r = false;
+				} else if (diff > 0) {
+					kd_l = false;
+					kd_r = true;
+				} else if (diff < 0) {
+					kd_r = false;
+					kd_l = true;
+				}
+				return;
 			}
-			return;
 		}
 
 		for (let i=0; i<foods.length; i++) {
