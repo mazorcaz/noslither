@@ -58,24 +58,39 @@ if (window.noslither) {
 		if (!playing) return;
 
 		let trad = slither.sp / (mamu * slither.scang * slither.spang) / 4;
+		let tradSqr = trad * trad;
 
-		if (noslither.bot.food && (slither.xx - noslither.bot.food.xx) ** 2 + (slither.yy - noslither.bot.food.yy) ** 2 < 1000 ** 2) {
-			let food = noslither.bot.food;
-			if (food.eaten_fr) {
-				console.log("EATEN");
-				noslither.bot.food = null;
-				return;
-			}
-			let cos = Math.cos(slither.ang);
-			let sin = Math.sin(slither.ang);
-			let distanceLeftSqr = (slither.xx + sin * trad - food.xx) ** 2 + (slither.yy - cos * trad - food.yy) ** 2;
-			let distanceRightSqr = (slither.xx - sin * trad - food.xx) ** 2 + (slither.yy + cos * trad - food.yy) ** 2;
-			if (distanceLeftSqr < trad ** 2 || distanceRightSqr < trad ** 2) {
-				noslither.bot.food = null;
-				return;
-			}
+		let minCost = Infinity;
+		let min = null;
 
-			let angle = Math.atan2(food.yy - slither.yy, food.xx - slither.xx);
+		let obstacles = [];
+		let threats = [];
+		let obx = 0;
+		let oby = 0;
+
+		for (let i=0; i<slithers.length; i++) {
+			let snake = slithers[i];
+			if (!snake) continue;
+			if (snake.id == slither.id) continue;
+
+			for (let j=0; j<snake.pts.length; j++) {
+				let pt = snake.pts[j];
+				let dx = pt.xx - slither.xx;
+				let dy = pt.yy - slither.yy;
+
+				let distanceSqr = dx ** 2 + dy ** 2;
+				if (distanceSqr <= tradSqr * 9) {
+					obx += dx;
+					oby += dy;
+					obstacles.push(pt);
+					if (pt.fx == 0 && pt.fy == 0) threats.push(pt);
+				}
+			}
+		}
+
+		if (threats.length > 0 || obstacles.length > 0) {
+			console.log('escaping');
+			let angle = Math.atan2(-oby, -obx);
 			let diff = (angle - slither.ang);
 			diff = Math.atan2(Math.sin(diff), Math.cos(diff));
 			if (Math.abs(diff) < 0.1) {
@@ -88,36 +103,49 @@ if (window.noslither) {
 				kd_r = false;
 				kd_l = true;
 			}
-		} else {
-			console.log("no food");
-			let minDistanceSqr = Infinity;
-			let min = -1;
+			return;
+		}
 
-			for (let i=0; i<foods.length; i++) {
-				let food = foods[i];
-				if (!food) continue;
-				if (food.eaten_fr) continue;
+		for (let i=0; i<foods.length; i++) {
+			let food = foods[i];
+			if (!food) continue;
+			if (food.eaten_fr) continue;
 
-				let distanceSqr = (slither.xx - food.xx) ** 2 + (slither.yy - food.yy) ** 2;
-				
-				let cos = Math.cos(slither.ang);
-				let sin = Math.sin(slither.ang);
-				let distanceLeftSqr = (slither.xx + sin * trad - food.xx) ** 2 + (slither.yy - cos * trad - food.yy) ** 2;
-				let distanceRightSqr = (slither.xx - sin * trad - food.xx) ** 2 + (slither.yy + cos * trad - food.yy) ** 2;
+			let distanceSqr = (slither.xx - food.xx) ** 2 + (slither.yy - food.yy) ** 2;
+			let distance = Math.sqrt(distanceSqr);
+			
+			let cos = Math.cos(slither.ang);
+			let sin = Math.sin(slither.ang);
+			let distanceLeftSqr = (slither.xx + sin * trad - food.xx) ** 2 + (slither.yy - cos * trad - food.yy) ** 2;
+			let distanceRightSqr = (slither.xx - sin * trad - food.xx) ** 2 + (slither.yy + cos * trad - food.yy) ** 2;
 
-				if (distanceLeftSqr <= trad ** 2) continue;
-				if (distanceRightSqr <= trad ** 2) continue;
+			if (distanceLeftSqr <= tradSqr) continue;
+			if (distanceRightSqr <= tradSqr) continue;
 
-				distanceSqr -= food.sz * 100 * 100;
-				if (distanceSqr < minDistanceSqr) {
-					minDistanceSqr = distanceSqr;
-					min = i;
-				}
+			let angle = Math.atan2(food.yy - slither.yy, food.xx - slither.xx);
+			let diff = (angle - slither.ang);
+			diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+
+			let cost = distance + diff * 10 - (food.sz ** 2) * 25;
+			if (cost < minCost) {
+				minCost = cost;
+				min = food;
 			}
+		}
 
-			if (min != -1) {
-				noslither.bot.food = foods[min];
-				console.log(foods[min].sz);
+		if (min) {
+			let angle = Math.atan2(min.yy - slither.yy, min.xx - slither.xx);
+			let diff = (angle - slither.ang);
+			diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+			if (Math.abs(diff) < 0.1) {
+				kd_l = false;
+				kd_r = false;
+			} else if (diff > 0) {
+				kd_l = false;
+				kd_r = true;
+			} else if (diff < 0) {
+				kd_r = false;
+				kd_l = true;
 			}
 		}
 	}
